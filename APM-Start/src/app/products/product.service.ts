@@ -63,10 +63,17 @@ export class ProductService {
   productsWithAdd$ = merge(
     this.productsWithCategory$,
     this.productInsertedAction$
-  )
-    .pipe(
-      scan((acc: Product[], value: Product) => [...acc, value])
-    );
+  ).pipe(
+    scan((acc: Product[], value: Product) => [...acc, value])
+  );
+
+  selectedProductSuppliers$ = combineLatest([
+    this.selectedProduct$,
+    this.supplierService.suppliers$
+  ]).pipe(
+    map(([selectedProduct, suppliers]) =>
+      suppliers.filter(item => selectedProduct.supplierIds.includes(item.id)))
+  );
 
   addProduct(newProduct?: Product) {
     newProduct = newProduct || this.fakeProduct();

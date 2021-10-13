@@ -3,13 +3,20 @@ import { HttpClient } from '@angular/common/http';
 
 import { throwError, Observable, of } from 'rxjs';
 import { Supplier } from './supplier';
-import { concatMap, map, mergeMap, switchMap, tap } from 'rxjs/operators';
+import { catchError, concatMap, map, mergeMap, shareReplay, switchMap, tap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SupplierService {
   suppliersUrl = 'api/suppliers';
+
+  suppliers$ = this.http.get<Supplier[]>(this.suppliersUrl)
+    .pipe(
+      tap(data => console.log('suppliers', JSON.stringify(data))),
+      shareReplay(1),
+      catchError(this.handleError)
+    );
 
   suppliersWithMap$ = of(1, 5, 8)
     .pipe(
@@ -22,13 +29,13 @@ export class SupplierService {
       concatMap(id => this.http.get<Supplier>(`${this.suppliersUrl}/${id}`))
     );
 
-    suppliersWithMergeMap$ = of(1, 5, 8)
+  suppliersWithMergeMap$ = of(1, 5, 8)
     .pipe(
       tap(id => console.log('mergeMap source Observable', id)),
       mergeMap(id => this.http.get<Supplier>(`${this.suppliersUrl}/${id}`))
     );
 
-    suppliersWithSwitchMap$ = of(1, 5, 8)
+  suppliersWithSwitchMap$ = of(1, 5, 8)
     .pipe(
       tap(id => console.log('switchMap source Observable', id)),
       switchMap(id => this.http.get<Supplier>(`${this.suppliersUrl}/${id}`))
